@@ -1,23 +1,32 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useEffect, useState } from 'react';
+import supabase from './config/supabaseClient';
 
 function App() {
+  const [productos, setProductos] = useState([]);
+
+  useEffect(() => {
+    const fetchProductos = async () => {
+      const { data, error } = await supabase.from('productos').select('*');
+      if (error) {
+        console.error("Error al obtener productos:", error);
+      } else {
+        setProductos(data);
+      }
+    };
+
+    fetchProductos();
+  }, []);
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <h1>Lista de Productos</h1>
+      <ul>
+        {productos.map((producto) => (
+          <li key={producto.id_producto}>
+            {producto.nombre_producto} - ₡{producto.precio}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

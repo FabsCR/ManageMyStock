@@ -1,8 +1,10 @@
+// Importa React, hooks de estado y efecto, y la configuración de Supabase
 import React, { useState, useEffect } from 'react';
 import supabase from '../config/supabaseClient';
 import '../App.css';
 
 function ProductManager() {
+  // Estado para almacenar la lista de productos y gestionar el formulario y las selecciones
   const [products, setProducts] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [productToDelete, setProductToDelete] = useState(null);
@@ -19,47 +21,57 @@ function ProductManager() {
     imagen_url: ''
   });
 
+  // Ejecuta fetchProducts al montar el componente para obtener productos de la base de datos
   useEffect(() => {
     fetchProducts();
   }, []);
 
+  // Obtiene los productos de la tabla "productos" en Supabase y los guarda en el estado
   const fetchProducts = async () => {
     const { data, error } = await supabase.from('productos').select('*');
     if (!error) setProducts(data);
   };
 
+  // Actualiza el formulario con los datos del producto seleccionado para editar
   const handleSelectProduct = (product) => {
     setSelectedProduct(product);
     setForm(product);
   };
 
+  // Actualiza el estado del formulario cada vez que el usuario cambia un campo
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  // Maneja el envío del formulario, guardando o actualizando el producto en Supabase
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (selectedProduct) {
+      // Actualiza el producto si ya existe
       await supabase.from('productos').update(form).eq('id_producto', selectedProduct.id_producto);
     } else {
+      // Inserta un nuevo producto si no existe
       await supabase.from('productos').insert([form]);
     }
-    fetchProducts();
-    handleClearForm();
+    fetchProducts(); // Recarga los productos para reflejar los cambios
+    handleClearForm(); // Limpia el formulario después de enviar
   };
 
+  // Configura el estado para eliminar un producto específico
   const confirmDelete = (id) => {
     setProductToDelete(id);
   };
 
+  // Elimina el producto seleccionado de la base de datos
   const handleDelete = async () => {
     if (productToDelete) {
       await supabase.from('productos').delete().eq('id_producto', productToDelete);
-      fetchProducts();
-      setProductToDelete(null);
+      fetchProducts(); // Recarga la lista de productos tras la eliminación
+      setProductToDelete(null); // Limpia el estado de eliminación
     }
   };
 
+  // Limpia el formulario y el estado de producto seleccionado
   const handleClearForm = () => {
     setSelectedProduct(null);
     setForm({
@@ -78,6 +90,7 @@ function ProductManager() {
 
   return (
     <div className="manager-container">
+      {/* Sección de la lista de productos */}
       <div className="list-container">
         <h2>Lista de Productos</h2>
         <table className="table">
@@ -104,6 +117,8 @@ function ProductManager() {
           </tbody>
         </table>
       </div>
+      
+      {/* Formulario para agregar o editar productos */}
       <div className="form-container">
         <h2>{selectedProduct ? 'Editar Producto' : 'Agregar Producto'}</h2>
         <form onSubmit={handleSubmit}>
@@ -123,6 +138,8 @@ function ProductManager() {
           </div>
         </form>
       </div>
+
+      {/* Confirmación de eliminación de producto */}
       {productToDelete && (
         <div className="delete-confirmation">
           <p>¿Estás seguro de que deseas eliminar este producto?</p>

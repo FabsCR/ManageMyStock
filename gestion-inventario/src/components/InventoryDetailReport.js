@@ -1,20 +1,24 @@
+// Importa React, hooks de estado y efecto, y la configuración de Supabase
 import React, { useEffect, useState } from 'react';
 import supabase from '../config/supabaseClient';
 
 function InventoryDetailReport() {
+  // Estado para almacenar los datos detallados del inventario
   const [inventoryData, setInventoryData] = useState([]);
 
+  // Llama fetchInventoryDetails cuando el componente se monta para cargar datos
   useEffect(() => {
     fetchInventoryDetails();
   }, []);
 
+  // Obtiene el reporte detallado del inventario usando la función 'get_inventory_detail' en Supabase
   const fetchInventoryDetails = async () => {
     const { data, error } = await supabase.rpc('get_inventory_detail');
     if (error) {
       console.error('Error fetching inventory details:', error.message);
-      setInventoryData([]);
+      setInventoryData([]); // Asigna un arreglo vacío en caso de error
     } else {
-      setInventoryData(data || []);
+      setInventoryData(data || []); // Actualiza el estado con los datos obtenidos
     }
   };
 

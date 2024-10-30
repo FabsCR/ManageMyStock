@@ -1,8 +1,10 @@
+// Importa React, hooks de estado y efecto, y la configuración de Supabase
 import React, { useState, useEffect } from 'react';
 import supabase from '../config/supabaseClient';
 import '../App.css';
 
 function OrderManager() {
+  // Estados para manejar pedidos, formulario, y las selecciones de edición o eliminación
   const [orders, setOrders] = useState([]);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [orderToDelete, setOrderToDelete] = useState(null);
@@ -13,47 +15,57 @@ function OrderManager() {
     fecha_entrega_estimada: ''
   });
 
+  // Ejecuta fetchOrders al montar el componente para cargar pedidos desde Supabase
   useEffect(() => {
     fetchOrders();
   }, []);
 
+  // Obtiene la lista de pedidos desde la tabla "pedidos" en Supabase
   const fetchOrders = async () => {
     const { data, error } = await supabase.from('pedidos').select('*');
     if (!error) setOrders(data);
   };
 
+  // Actualiza el formulario con los datos del pedido seleccionado para editar
   const handleSelectOrder = (order) => {
     setSelectedOrder(order);
     setForm(order);
   };
 
+  // Actualiza el estado del formulario cada vez que el usuario cambia un campo
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  // Maneja el envío del formulario, guardando o actualizando el pedido en Supabase
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (selectedOrder) {
+      // Actualiza el pedido si ya existe
       await supabase.from('pedidos').update(form).eq('id_pedido', selectedOrder.id_pedido);
     } else {
+      // Inserta un nuevo pedido si no existe
       await supabase.from('pedidos').insert([form]);
     }
-    fetchOrders();
-    handleClearForm();
+    fetchOrders(); // Recarga los pedidos para reflejar los cambios
+    handleClearForm(); // Limpia el formulario después de enviar
   };
 
+  // Configura el estado para eliminar un pedido específico
   const confirmDelete = (id) => {
     setOrderToDelete(id);
   };
 
+  // Elimina el pedido seleccionado de la base de datos
   const handleDelete = async () => {
     if (orderToDelete) {
       await supabase.from('pedidos').delete().eq('id_pedido', orderToDelete);
-      fetchOrders();
-      setOrderToDelete(null);
+      fetchOrders(); // Recarga la lista de pedidos tras la eliminación
+      setOrderToDelete(null); // Limpia el estado de eliminación
     }
   };
 
+  // Limpia el formulario y el estado de pedido seleccionado
   const handleClearForm = () => {
     setSelectedOrder(null);
     setForm({
@@ -66,6 +78,7 @@ function OrderManager() {
 
   return (
     <div className="manager-container">
+      {/* Sección de la lista de pedidos */}
       <div className="list-container">
         <h2>Lista de Pedidos</h2>
         <table className="table">
@@ -94,6 +107,8 @@ function OrderManager() {
           </tbody>
         </table>
       </div>
+
+      {/* Formulario para agregar o editar pedidos */}
       <div className="form-container">
         <h2>{selectedOrder ? 'Editar Pedido' : 'Agregar Pedido'}</h2>
         <form onSubmit={handleSubmit}>
@@ -111,6 +126,8 @@ function OrderManager() {
           </div>
         </form>
       </div>
+
+      {/* Confirmación de eliminación de pedido */}
       {orderToDelete && (
         <div className="delete-confirmation">
           <p>¿Estás seguro de que deseas eliminar este pedido?</p>

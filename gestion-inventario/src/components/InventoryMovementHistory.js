@@ -1,20 +1,24 @@
+// Importa React, hooks de estado y efecto, y la configuración de Supabase
 import React, { useEffect, useState } from 'react';
 import supabase from '../config/supabaseClient';
 
 function InventoryMovementHistory() {
+  // Estado para almacenar los datos del historial de movimientos de inventario
   const [movementData, setMovementData] = useState([]);
 
+  // Ejecuta fetchMovementHistory al montar el componente para cargar el historial
   useEffect(() => {
     fetchMovementHistory();
   }, []);
 
+  // Obtiene el historial de movimientos desde la función almacenada 'get_inventory_movements'
   const fetchMovementHistory = async () => {
     const { data, error } = await supabase.rpc('get_inventory_movements');
     if (error) {
       console.error('Error fetching inventory movements:', error.message);
-      setMovementData([]);
+      setMovementData([]); // Si hay error, se asigna un arreglo vacío
     } else {
-      setMovementData(data || []);
+      setMovementData(data || []); // Actualiza el estado con los datos obtenidos
     }
   };
 
